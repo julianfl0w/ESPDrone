@@ -6,8 +6,8 @@
  * Description: entry file of user application
  *
  * Modification history:
- *     2014/1/1, v1.0 create this file.
- *     Feb 2016, v2.0 edit by JUIXE julian3@umbc.edu
+ *	 2014/1/1, v1.0 create this file.
+ *	 Feb 2016, v2.0 edit by JUIXE julian3@umbc.edu
 *******************************************************************************/
 #include "ets_sys.h"
 #include "osapi.h"
@@ -26,7 +26,7 @@
  * FunctionName : user_init
  * Description  : entry of user application, init user function here
  * Parameters   : none
- * Returns      : none
+ * Returns	  : none
 *******************************************************************************/
  
 void user_rf_pre_init(void)
@@ -64,7 +64,7 @@ gps_uart_init(void)
 		//os_printf("ADC READ:%d\n\n\n", system_adc_read());
 
 	}
-    os_timer_arm(&init_timer, 1000, 0); 
+	os_timer_arm(&init_timer, 1000, 0); 
 }
 
 void user_init(void)
@@ -85,12 +85,12 @@ void user_init(void)
 
 	system_phy_set_powerup_option(3);
 	wifi_set_opmode(STATION_MODE); //Set station mode
-    system_phy_set_max_tpw(82); //MAX POWERR!
+	system_phy_set_max_tpw(82); //MAX POWERR!
 	system_phy_set_tpw_via_vdd33(system_get_vdd33());
-    user_set_station_config();
+	user_set_station_config();
 
-    os_timer_disarm(&init_timer);
-    os_timer_setfn(&init_timer, (os_timer_func_t *)gps_uart_init, NULL);
-    os_timer_arm(&init_timer, 1000, 0); 
+	os_timer_disarm(&init_timer);
+	os_timer_setfn(&init_timer, (os_timer_func_t *)gps_uart_init, NULL);
+	os_timer_arm(&init_timer, 1000, 0); 
 }
 
