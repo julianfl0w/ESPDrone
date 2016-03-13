@@ -9,7 +9,7 @@ LOCAL os_timer_t send_timer;
 LOCAL struct espconn user_udp_espconn;
 LOCAL struct espconn user_udp_espconn_rx;
 int sequence = 0;
-int flying = 0;
+int flystate = 0;
 uint8_t initNavData = 1;
 int adc_read_last = 1000;
 const char *ESP8266_MSG = "I'm ESP8266 ";
@@ -17,7 +17,13 @@ const char *ATREF = "AT*REF=";
 const char *ATPCMD = "AT*PCMD=";
 const char *TAKEOFF = ",290718208";
 const char *LAND = ",290717696";
-   
+  
+#define FLYSTATE_GROUNDED  0
+#define FLYSTATE_MANUAL1   1
+#define FLYSTATE_AUTOMATIC 2
+#define FLYSTATE_MANUAL2   3
+#define FLYSTATECOUNT 4
+
 /*---------------------------------------------------------------------------*/
 LOCAL struct espconn ptrespconn;
 
@@ -45,33 +51,34 @@ uint8_t forward, left, right;
       * Parameters  : none
       * Returns      : none
  *******************************************************************************/
+
+//this function is called every 50ms. it sends the appropriate command to the quadcoper
  LOCAL void ICACHE_FLASH_ATTR
  user_udp_send(void)
  {
-	//os_printf("BOUTTTAAA PRINT SHIZZZZ\n\n");
      char DeviceBuffer[40] = {0};
-     char hwaddr[6];
+     //char hwaddr[6];
      struct ip_info ipconfig;
 
      const char udp_remote_ip[4] = { 255, 255, 255, 255}; 
      os_memcpy(user_udp_espconn.proto.udp->remote_ip, udp_remote_ip, 4); // ESP8266 udp remote IP need to be set everytime we call espconn_sent
      user_udp_espconn.proto.udp->remote_port = 5556;  // ESP8266 udp remote port need to be set everytime we call espconn_sent
 
-     wifi_get_macaddr(STATION_IF, hwaddr);
+     //wifi_get_macaddr(STATION_IF, hwaddr);
  	
-	//MODIFY THIS LINE
+	//detect adc button push, and increase state
 	if(system_adc_read() < 100 & adc_read_last > 100){
-		if(flying == 0){
+		if(flystate == 0)
 			os_sprintf(DeviceBuffer, "%s%d%s\r", ATREF, sequence++, TAKEOFF);
-			flying = 1;
-		}else{
-			os_sprintf(DeviceBuffer, "AT*CONFIG=\"general:navdata_demo\",\"TRUE\"\\r");
-			flying = 0;
-		}	
+		flystate = (flystate + 1)%FLYSTATECOUNT;
+
+	//initialise navigational data if necessary
 	}else if(initNavData){
 		initNavData = 0;
-		os_sprintf(DeviceBuffer, "%s%d%s\r", ATREF, sequence++, LAND);
-	}else if(flying){
+		os_sprintf(DeviceBuffer, "AT*CONFIG=\"general:navdata_demo\",\"TRUE\"\\r");
+
+	//operate manual control
+	}else if(flystate == FLYSTATE_MANUAL1 | flystate = FLYSTATE_MANUAL2){
 	    forward = !GPIO_INPUT_GET(5);
         left = !GPIO_INPUT_GET(0);
         right = !GPIO_INPUT_GET(4);
@@ -79,13 +86,22 @@ uint8_t forward, left, right;
 		os_sprintf(DeviceBuffer, "%s%d,%d,%d,%d,%d,%d\r", ATPCMD, sequence++, (left || right || forward), 0, -forward * 1090519040,
 			0, -left * 1090519040 + right * 1090519040);
 		//os_sprintf(DeviceBuffer, "%s" MACSTR "!" , ESP8266_MSG, MAC2STR(hwaddr));
-	}else
+
+	//send ftrim if grounded
+	}else if(flystate == FLYSTATE_GROUNDED){
 		os_sprintf(DeviceBuffer, "AT*FTRIM=%d\r", sequence++);
-	os_printf("sending %s\n", DeviceBuffer);
- 	adc_read_last = system_adc_read();
-    espconn_sent(&user_udp_espconn, DeviceBuffer, os_strlen(DeviceBuffer));
-   
- }
+		os_printf("sending %s\n", DeviceBuffer);
+
+	//otherwse perform pathing with reference to GPS data
+	}else if(flystate == FLYSTATE_AUTOMATIC){
+		//INSERT AUTOPATHING HERE
+	}
+
+	//update adc_read_last
+ 	adc_read_last = system_adc_read();	
+	//send the buffer
+ 	espconn_sent(&user_udp_espconn, DeviceBuffer, os_strlen(DeviceBuffer));
+}
  
  /******************************************************************************
       * FunctionName : user_udp_sent_cb
