@@ -20,6 +20,7 @@
 #include "user_interface.h"
 #include "espconn.h"
 #include "start_wifi.h"
+#include "driver/softuart.h"
 
 
 /******************************************************************************
@@ -38,6 +39,9 @@ LOCAL os_timer_t init_timer;
 int sequencem = 0;
 int i = 0;
 int gps_edit_state = 0;
+//create global softuart instances
+Softuart softuart;
+
 void ICACHE_FLASH_ATTR
 gps_uart_init(void)
 {
@@ -69,17 +73,27 @@ gps_uart_init(void)
 
 void user_init(void)
 {
+	//init software uart
+	Softuart_SetPinRx(&softuart,13); //<<CHANGE PINS!	
+	Softuart_SetPinTx(&softuart,15);
+
 	gpio_init();
 	gpio_output_set(0, 0, 0, 0xFFFFFFFF);
+
 	gpio_pin_wakeup_disable();
 	PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U,FUNC_GPIO12);
 	ETS_GPIO_INTR_DISABLE();
+
 
 	UART_SetPrintPort(UART1);
 	UartDev.data_bits = EIGHT_BITS;
 	UartDev.parity = NONE_BITS;
 	UartDev.stop_bits = ONE_STOP_BIT;
 	uart_init(BIT_RATE_9600, BIT_RATE_115200);
+
+	//startup
+	//Softuart_Init(&softuart,9600);
+
 
 	uart0_sendStr("\r\n\r\n\r\n");
 

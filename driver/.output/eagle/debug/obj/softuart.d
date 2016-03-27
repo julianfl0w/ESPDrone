@@ -1,4 +1,4 @@
-.output/eagle/debug/obj/user_main.o .output/eagle/debug/obj/user_main.d : user_main.c ../../include/ets_sys.h ../../include/c_types.h \
+.output/eagle/debug/obj/softuart.o .output/eagle/debug/obj/softuart.d : softuart.c ../../include/ets_sys.h ../../include/c_types.h \
  ../../include/eagle_soc.h ../../include/osapi.h \
  /home/julian3/Espressif/esp-open-sdk/xtensa-lx106-elf/xtensa-lx106-elf/include/string.h \
  /home/julian3/Espressif/esp-open-sdk/xtensa-lx106-elf/xtensa-lx106-elf/include/_ansi.h \
@@ -17,9 +17,6 @@
  /home/julian3/Espressif/esp-open-sdk/xtensa-lx106-elf/xtensa-lx106-elf/include/sys/cdefs.h \
  /home/julian3/Espressif/esp-open-sdk/xtensa-lx106-elf/xtensa-lx106-elf/include/sys/string.h \
  ../include/user_config.h ../../include/gpio.h ../../include/os_type.h \
- ../../include/ets_sys.h ../include/driver/uart.h \
- ../include/driver/uart_register.h ../../include/eagle_soc.h \
- ../../include/c_types.h ../../include/espconn.h ../../include/ip_addr.h \
- ../../include/mem.h ../../include/user_interface.h \
- ../../include/os_type.h ../../include/queue.h ../../include/spi_flash.h \
- start_wifi.h ../include/driver/softuart.h
+ ../../include/ets_sys.h ../../include/user_interface.h \
+ ../../include/os_type.h ../../include/ip_addr.h ../../include/queue.h \
+ ../../include/spi_flash.h ../include/driver/softuart.h
