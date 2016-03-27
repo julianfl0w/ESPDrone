@@ -102,16 +102,16 @@ void Softuart_Init(Softuart *s, uint16_t baudrate)
 	//disable rs485
 	s->is_rs485 = 0;
 
+	/*
 	if(! _Softuart_Instances_Count) {
 		os_printf("SOFTUART initialize gpio\r\n");
 		//Initilaize gpio subsystem
 		gpio_init();
 	}
-
+	*/
 	//set bit time
 	s->bit_time = (1000000 / baudrate);
 	os_printf("SOFTUART bit_time is %d\r\n",s->bit_time);
-
 
 	//init tx pin
 	if(!s->pin_tx.gpio_mux_name) {
@@ -189,6 +189,7 @@ void Softuart_Init(Softuart *s, uint16_t baudrate)
 
 void Softuart_Intr_Handler(Softuart *s)
 {
+	
 	uint8_t level, gpio_id;
 // clear gpio status. Say ESP8266EX SDK Programming Guide in  5.1.6. GPIO interrupt handler
 
@@ -216,7 +217,7 @@ void Softuart_Intr_Handler(Softuart *s)
 
 			//now sample bits
 			unsigned i;
-			unsigned d = 0;
+			char d = 0;
 			unsigned start_time = 0x7FFFFFFF & system_get_time();
 
 			for(i = 0; i < 8; i ++ )
@@ -237,7 +238,8 @@ void Softuart_Intr_Handler(Softuart *s)
 			}
 
 			//store byte in buffer
-
+			os_printf("%c", d);
+			/*
 			// if buffer full, set the overflow flag and return
 			uint8 next = (s->buffer.receive_buffer_tail + 1) % SOFTUART_MAX_RX_BUFF;
 			if (next != s->buffer.receive_buffer_head)
@@ -249,7 +251,7 @@ void Softuart_Intr_Handler(Softuart *s)
 			else 
 			{
 			  s->buffer.buffer_overflow = 1;
-			}
+			}*/
 
 			//wait for stop bit
 			os_delay_us(s->bit_time);	
@@ -260,7 +262,7 @@ void Softuart_Intr_Handler(Softuart *s)
 		//clear interrupt
         GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, gpio_status);
 
-// Reactivate interrupts for GPIO0
+		// Reactivate interrupts for GPIO0
         gpio_pin_intr_state_set(GPIO_ID_PIN(s->pin_rx.gpio_id), 3);
 	} else {
 		//clear interrupt, no matter from which pin

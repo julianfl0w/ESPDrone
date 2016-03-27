@@ -55,6 +55,8 @@ gps_uart_init(void)
 		os_printf("REQUESTING MIN DATA ONLY\n");
 		uart0_sendStr("$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n");
 		gps_edit_state++;
+		//startup
+		Softuart_Init(&softuart,9600);
 	}
 	else{
 		//os_printf("\n\nPINS: %d%d%d%d%d%d%d%d%d%d%d\n\n", GPIO_INPUT_GET(0),GPIO_INPUT_GET(2),GPIO_INPUT_GET(4),
@@ -73,26 +75,21 @@ gps_uart_init(void)
 
 void user_init(void)
 {
-	//init software uart
-	Softuart_SetPinRx(&softuart,13); //<<CHANGE PINS!	
-	Softuart_SetPinTx(&softuart,15);
-
 	gpio_init();
 	gpio_output_set(0, 0, 0, 0xFFFFFFFF);
 
+	//init software uart
+	Softuart_SetPinRx(&softuart,13); 	
+	Softuart_SetPinTx(&softuart,15);
+
 	gpio_pin_wakeup_disable();
 	PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U,FUNC_GPIO12);
-	ETS_GPIO_INTR_DISABLE();
-
 
 	UART_SetPrintPort(UART1);
 	UartDev.data_bits = EIGHT_BITS;
 	UartDev.parity = NONE_BITS;
 	UartDev.stop_bits = ONE_STOP_BIT;
 	uart_init(BIT_RATE_9600, BIT_RATE_115200);
-
-	//startup
-	//Softuart_Init(&softuart,9600);
 
 
 	uart0_sendStr("\r\n\r\n\r\n");
