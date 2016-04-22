@@ -20,7 +20,7 @@
 #include "driver/uart_register.h"
 #include "mem.h"
 #include "os_type.h"
-//#include "driver/gps.h"
+#include "driver/parse.h"
 
 // UartDev is defined and initialized in rom code.
 extern UartDevice	UartDev;
@@ -257,7 +257,6 @@ uart0_rx_intr_handler(void *para)
 		WRITE_PERI_REG(UART_INT_CLR(uart_no), UART_RXFIFO_OVF_INT_CLR);
 		DBG1("RX OVF!!\r\n");
 	}
-
 }
 
 /******************************************************************************
@@ -279,8 +278,11 @@ uart_test_rx()
 }
 #endif
 
+#define MAXNEMA 80
+char GpsRead[MAXNEMA] = {0};
+int i;
 //struct gpsStruct gps;
-
+uint32_t gpsStringIndex = 0;
 LOCAL void ICACHE_FLASH_ATTR ///////
 uart_recvTask(os_event_t *events)
 {
@@ -293,16 +295,9 @@ uart_recvTask(os_event_t *events)
 		uint8 idx=0;
 		for(idx=0;idx<fifo_len;idx++) {
 			d_tmp = READ_PERI_REG(UART_FIFO(UART0)) & 0xFF;
-			uart_tx_one_char(UART1, d_tmp);
-
-			//insert GPS PARSE HERE
-			//fuseDataGPS(d_tmp, gps);
-			//print gps latitude
-			//os_printf(gps.latitude);
-			//os_printf('\n');
-			//print gps longitude
-			//os_printf(gps.longitude);
-			//os_printf('\n');
+			//uart_tx_one_char(UART1, d_tmp);
+			process(d_tmp, 0);
+			// RECEIVED CHAR!
 		}
 		WRITE_PERI_REG(UART_INT_CLR(UART0), UART_RXFIFO_FULL_INT_CLR|UART_RXFIFO_TOUT_INT_CLR);
 		uart_rx_intr_enable(UART0);
@@ -320,6 +315,7 @@ uart_recvTask(os_event_t *events)
 void ICACHE_FLASH_ATTR
 uart_init(UartBautRate uart0_br, UartBautRate uart1_br)
 {
+
 	/*this is a example to process uart data from task,please change the priority to fit your application task if exists*/
 	system_os_task(uart_recvTask, uart_recvTaskPrio, uart_recvTaskQueue, uart_recvTaskQueueLen);  //demo with a task to process the uart data
 	

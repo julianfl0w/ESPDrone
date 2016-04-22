@@ -4,6 +4,7 @@
 #include "mem.h"
 #include "user_interface.h"
 #include "espconn.h"
+#include "driver/parse.h"
 
 #define SSID "ardrone2_194455"
 #define PASSWORD ""

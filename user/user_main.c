@@ -57,18 +57,10 @@ gps_uart_init(void)
 		gps_edit_state++;
 		//startup
 		Softuart_Init(&softuart,9600);
+		Softuart_Puts(&softuart, "$PUBX,40,GLL,0,0,0,0,0,0*5C");
+		os_printf("sent $PUBX,40,GLL,0,0,0,0,0,0*5C");
 	}
 	else{
-		//os_printf("\n\nPINS: %d%d%d%d%d%d%d%d%d%d%d\n\n", GPIO_INPUT_GET(0),GPIO_INPUT_GET(2),GPIO_INPUT_GET(4),
-		//	GPIO_INPUT_GET(5),GPIO_INPUT_GET(9), GPIO_INPUT_GET(10),GPIO_INPUT_GET(12),GPIO_INPUT_GET(13),
-		//	GPIO_INPUT_GET(14),GPIO_INPUT_GET(15), GPIO_INPUT_GET(16));
-		//for(i = 0; i < 16; i++)
-		//	if(i != 0 & i!=1)
-		//		os_printf(GPIO_INPUT_GET(i));
-		//os_sprintf("%d, %d, %d \n", GPIO_INPUT_GET(5), GPIO_INPUT_GET(4),  GPIO_INPUT_GET(14));
-		//os_printf("\n\nPINS: %04x\n", gpio_input_get());
-		//os_printf("ADC READ:%d\n\n\n", system_adc_read());
-
 	}
 	os_timer_arm(&init_timer, 1000, 0); 
 }

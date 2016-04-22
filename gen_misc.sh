@@ -7,7 +7,6 @@ echo "Please follow below steps(1-5) to generate specific bin(s):"
 echo "STEP 1: choose boot version(0=boot_v1.1, 1=boot_v1.2+, 2=none)"
 echo "enter(0/1/2, default 2):"
 read input
-
 if [ -z "$input" ]; then
     boot=none
 elif [ $input == 0 ]; then
@@ -64,7 +63,6 @@ echo ""
 echo "STEP 3: choose spi speed(0=20MHz, 1=26.7MHz, 2=40MHz, 3=80MHz)"
 echo "enter (0/1/2/3, default 2):"
 read input
-
 if [ -z "$input" ]; then
     spi_speed=40
 elif [ $input == 0 ]; then
@@ -83,7 +81,6 @@ echo ""
 echo "STEP 4: choose spi mode(0=QIO, 1=QOUT, 2=DIO, 3=DOUT)"
 echo "enter (0/1/2/3, default 0):"
 read input
-
 if [ -z "$input" ]; then
     spi_mode=QIO
 elif [ $input == 1 ]; then
@@ -108,7 +105,6 @@ echo "    5=2048KB(1024KB+1024KB)"
 echo "    6=4096KB(1024KB+1024KB)"
 echo "enter (0/2/3/4/5/6, default 0):"
 read input
-
 if [ -z "$input" ]; then
     spi_size_map=0
     echo "spi size: 512KB"

@@ -12,19 +12,22 @@ int sequence = 0;
 int flystate = 0;
 uint8_t initNavData = 1;
 int adc_read_last = 1000;
-const char *ESP8266_MSG = "I'm ESP8266 ";
 const char *ATREF = "AT*REF=";
 const char *ATPCMD = "AT*PCMD=";
 const char *TAKEOFF = ",290718208";
 const char *LAND = ",290717696";
   
-#define FLYSTATE_GROUNDED_START  0
-#define FLYSTATE_TAKEOFF	1 
-#define FLYSTATE_MANUAL1	2
-#define FLYSTATE_AUTOMATIC 3
-#define FLYSTATE_MANUAL2	4
-#define FLYSTATE_GROUNDED_END	5
-#define FLYSTATECOUNT 6
+#define FLYSTATE_INITNAV       0
+#define FLYSTATE_ACK1          1
+#define FLYSTATE_OUTDOOR       2
+#define FLYSTATE_OUTDOORSHELL  3
+#define FLYSTATE_GROUNDED_START 4
+#define FLYSTATE_TAKEOFF	   5
+#define FLYSTATE_MANUAL1	   6
+#define FLYSTATE_AUTOMATIC     7
+#define FLYSTATE_MANUAL2	   8
+#define FLYSTATE_GROUNDED_END  9
+#define FLYSTATECOUNT          10
 
 /*---------------------------------------------------------------------------*/
 LOCAL struct espconn ptrespconn;
@@ -72,9 +75,21 @@ uint8_t forward, left, right, needsCalibration;
 	}
 
 	//initialise navigational data if necessary
-	if(initNavData){
-		initNavData = 0;
+	if(flystate == FLYSTATE_INITNAV){
 		os_sprintf(DeviceBuffer, "AT*CONFIG=\"general:navdata_demo\",\"TRUE\"\\r");
+		//os_sprintf(DeviceBuffer, "AT*CONFIG=%d%s%s\r", "\"general:navdata_demo\"","\"TRUE\"");
+		flystate++;
+	}else if(flystate == FLYSTATE_ACK1){
+		os_sprintf(DeviceBuffer, "AT*CTRL=0\r");
+		flystate++;
+	}else if(flystate == FLYSTATE_OUTDOOR){
+		os_sprintf(DeviceBuffer, "AT*CONFIG=%d,%s,%s\r", sequence++, "\"control:flight_without_shell\"","\"TRUE\"");
+		flystate++;
+		
+	//AT*CONFIG=605,"control:flight_without_shell","TRUE"
+	}else if(flystate == FLYSTATE_OUTDOORSHELL){
+		os_sprintf(DeviceBuffer, "AT*CONFIG=%d,%s,%s\r", sequence++, "\"control:outdoor\"","\"TRUE\"");
+		flystate++;
 		
 	}else if(flystate == FLYSTATE_TAKEOFF){
 		os_sprintf(DeviceBuffer, "%s%d%s\r", ATREF, sequence++, TAKEOFF);
@@ -107,7 +122,12 @@ uint8_t forward, left, right, needsCalibration;
 		os_sprintf(DeviceBuffer, "AT*COMWDG=%d\r", sequence++);
 	}
 
-	os_printf("sending %s\n", DeviceBuffer);
+	
+	os_printf("LAT: %f\n", getGPS(0, RMC_LAT));
+	os_printf("LONG: %f\n", getGPS(0, RMC_LONG));
+	os_printf("TIME: %f\n", getGPS(0, RMC_TIME));
+	os_printf("TEST: %d\n", 100);
+
 	//update adc_read_last
  	adc_read_last = system_adc_read();	
 	//send the buffer
@@ -125,7 +145,7 @@ user_udp_sent_cb(void *arg)
 {
 	struct espconn *pespconn = arg;
  
-	os_printf("user_udp_send successfully !!!\n");
+	//os_printf("user_udp_send successfully !!!\n");
 	 
 	//disarm timer first
 	os_timer_disarm(&test_timer);
@@ -155,7 +175,7 @@ user_check_ip(void)
 
 	if (wifi_station_get_connect_status() == STATION_GOT_IP && ipconfig.ip.addr != 0)
 	{
-	  os_printf("got ip !!! \r\n");
+	  //os_printf("got ip !!! \r\n");
 
 	  wifi_set_broadcast_if(STATIONAP_MODE); // send UDP broadcast from both station and soft-AP interface
 
@@ -184,11 +204,11 @@ user_check_ip(void)
 			wifi_station_get_connect_status() == STATION_NO_AP_FOUND ||
 			wifi_station_get_connect_status() == STATION_CONNECT_FAIL))
 		{
-		 os_printf("connect fail !!! \r\n");
+		 //os_printf("connect fail !!! \r\n");
 		}
 	  else
 	  {	
-		os_printf("still waiting...\n");
+		//os_printf("still waiting...\n");
 		//re-arm timer to check ip
 		os_timer_setfn(&test_timer, (os_timer_func_t *)user_check_ip, NULL);
 		os_timer_arm(&test_timer, 500, 0);

@@ -22,4 +22,4 @@
  ../../include/c_types.h ../../include/espconn.h ../../include/ip_addr.h \
  ../../include/mem.h ../../include/user_interface.h \
  ../../include/os_type.h ../../include/queue.h ../../include/spi_flash.h \
- start_wifi.h ../include/driver/softuart.h
+ start_wifi.h ../include/driver/parse.h ../include/driver/softuart.h

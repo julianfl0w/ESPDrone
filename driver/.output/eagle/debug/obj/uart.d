@@ -19,4 +19,5 @@
  ../include/user_config.h ../include/driver/uart.h \
  ../include/driver/uart_register.h ../../include/eagle_soc.h \
  ../../include/c_types.h ../include/driver/uart_register.h \
- ../../include/mem.h ../../include/os_type.h ../../include/ets_sys.h
+ ../../include/mem.h ../../include/os_type.h ../../include/ets_sys.h \
+ ../include/driver/parse.h

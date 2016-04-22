@@ -239,6 +239,8 @@ void Softuart_Intr_Handler(Softuart *s)
 
 			//store byte in buffer
 			os_printf("%c", d);
+			// RECEIVED CHAR!!
+
 			/*
 			// if buffer full, set the overflow flag and return
 			uint8 next = (s->buffer.receive_buffer_tail + 1) % SOFTUART_MAX_RX_BUFF;
