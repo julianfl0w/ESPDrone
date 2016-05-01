@@ -17,7 +17,7 @@
  /home/julian3/Espressif/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.2/include/stddef.h \
  /home/julian3/Espressif/esp-open-sdk/xtensa-lx106-elf/xtensa-lx106-elf/include/sys/cdefs.h \
  /home/julian3/Espressif/esp-open-sdk/xtensa-lx106-elf/xtensa-lx106-elf/include/sys/string.h \
- ../include/user_config.h ../../include/mem.h \
+ ../include/user_config.h ../../include/mem.h ../../include/gpio.h \
  ../../include/user_interface.h ../../include/os_type.h \
  ../../include/ip_addr.h ../../include/queue.h ../../include/spi_flash.h \
  ../../include/espconn.h ../include/driver/parse.h \
@@ -32,4 +32,4 @@
  /home/julian3/Espressif/esp-open-sdk/xtensa-lx106-elf/xtensa-lx106-elf/include/alloca.h \
  /home/julian3/Espressif/esp-open-sdk/xtensa-lx106-elf/xtensa-lx106-elf/include/unistd.h \
  /home/julian3/Espressif/esp-open-sdk/xtensa-lx106-elf/xtensa-lx106-elf/include/sys/unistd.h \
- ../include/driver/qmath.h ../../include/gpio.h
+ ../include/driver/qmath.h ../../include/c_types.h

@@ -23,4 +23,4 @@
  /home/julian3/Espressif/esp-open-sdk/xtensa-lx106-elf/xtensa-lx106-elf/include/alloca.h \
  /home/julian3/Espressif/esp-open-sdk/xtensa-lx106-elf/xtensa-lx106-elf/include/unistd.h \
  /home/julian3/Espressif/esp-open-sdk/xtensa-lx106-elf/xtensa-lx106-elf/include/sys/unistd.h \
- ../include/driver/qmath.h
+ ../include/driver/qmath.h ../../include/c_types.h

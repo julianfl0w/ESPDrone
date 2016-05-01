@@ -1,15 +1,15 @@
 #include "driver/distance_calculation.h"
 
-double deg2rad(double deg)
+double ICACHE_FLASH_ATTR deg2rad(double deg)
 {
 	return (deg * PI / 180);
 }
 
-double rad2deg(double rad)
+double ICACHE_FLASH_ATTR rad2deg(double rad)
 {
 	return (rad * 180 / PI);
 }
-double calculate_distance(double QC_lat, double QC_long, double GV_lat, double GV_long)
+double ICACHE_FLASH_ATTR calculate_distance(double QC_lat, double QC_long, double GV_lat, double GV_long)
 {
 	double theta, dist;
 	theta = QC_long - GV_long;
@@ -20,7 +20,7 @@ double calculate_distance(double QC_lat, double QC_long, double GV_lat, double G
 	return dist;
 }
 
-double calculate_xdistance(double QC_lat, double GV_lat)
+double ICACHE_FLASH_ATTR calculate_xdistance(double QC_lat, double GV_lat)
 {
 	double xdist;
 	latMid = deg2rad((QC_lat + GV_lat)/2);
@@ -29,7 +29,7 @@ double calculate_xdistance(double QC_lat, double GV_lat)
 	return xdist;
 }
 
-double calculate_ydistance(double QC_long, double GV_long)
+double ICACHE_FLASH_ATTR calculate_ydistance(double QC_long, double GV_long)
 {
 	if(latMid == 0)
 	{
@@ -43,7 +43,7 @@ double calculate_ydistance(double QC_long, double GV_long)
 		return ydist;
 	}	
 }
-double* calculate_xy_distance(double QC_lat, double QC_long, double GV_lat, double GV_long)
+double* ICACHE_FLASH_ATTR calculate_xy_distance(double QC_lat, double QC_long, double GV_lat, double GV_long)
 {
 	double m_per_deg_lat, m_per_deg_long, deltaLat, deltaLon;
 	double xdist, ydist;
@@ -64,7 +64,7 @@ double* calculate_xy_distance(double QC_lat, double QC_long, double GV_lat, doub
 	return result;
 }
 
-double NMEAtoDecimalDegrees(double NMEA)
+double ICACHE_FLASH_ATTR NMEAtoDecimalDegrees(double NMEA)
 {
 	int b;
 	double c;

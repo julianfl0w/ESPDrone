@@ -278,7 +278,7 @@ void Softuart_Intr_Handler(Softuart *s)
 
 
 // Read data from buffer
-uint8_t Softuart_Read(Softuart *s)
+uint8_t ICACHE_FLASH_ATTR Softuart_Read(Softuart *s)
 {
   // Empty buffer?
   if (s->buffer.receive_buffer_head == s->buffer.receive_buffer_tail)
@@ -309,7 +309,7 @@ static inline u8 chbit(u8 data, u8 bit)
 }
 
 // Function for printing individual characters
-void Softuart_Putchar(Softuart *s, char data)
+void ICACHE_FLASH_ATTR Softuart_Putchar(Softuart *s, char data)
 {
 	unsigned i;
 	unsigned start_time = 0x7FFFFFFF & system_get_time();
@@ -357,7 +357,7 @@ void Softuart_Puts(Softuart *s, const char *c )
 	}
 }
 
-uint8_t Softuart_Readline(Softuart *s, char* Buffer, uint8_t MaxLen )
+uint8_t ICACHE_FLASH_ATTR Softuart_Readline(Softuart *s, char* Buffer, uint8_t MaxLen )
 {
 	uint8_t NextChar;
 	uint8_t len = 0;

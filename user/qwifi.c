@@ -3,7 +3,6 @@
 	 *
 *******************************************************************************/
 #include "qwifi.h"  
-#include "gpio.h"
 LOCAL os_timer_t test_timer;
 LOCAL os_timer_t send_timer;
 LOCAL struct espconn user_udp_espconn;

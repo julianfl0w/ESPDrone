@@ -85,7 +85,8 @@ gps_uart_init(void)
 	os_timer_arm(&init_timer, 559, 0); 
 }
 
-void user_init(void)
+void ICACHE_FLASH_ATTR
+user_init(void)
 {
 	gpio_init();
 	gpio_output_set(0, 0, 0, 0xFFFFFFFF);
