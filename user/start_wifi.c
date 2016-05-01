@@ -12,10 +12,16 @@ int sequence = 0;
 int flystate = 0;
 uint8_t initNavData = 1;
 int adc_read_last = 1000;
-const char *ATREF = "AT*REF=";
-const char *ATPCMD = "AT*PCMD=";
-const char *TAKEOFF = ",290718208";
-const char *LAND = ",290717696";
+
+#define ATREF   "AT*REF="
+#define ATPCMD  "AT*PCMD="
+#define TAKEOFF ",290718208"
+#define LAND    ",290717696"
+
+#define d50asSingle   1056964608LL
+#define d75asSingle   1061158912LL
+#define neg50asSingle 3204448256LL
+#define neg75asSingle 3208642560LL
   
 #define FLYSTATE_INITNAV       0
 #define FLYSTATE_ACK1          1
@@ -62,7 +68,8 @@ uint8_t forward, left, right, needsCalibration;
 	 char DeviceBuffer[40] = {0};
 	 char hwaddr[6];
 	 struct ip_info ipconfig;
-
+	 unsigned long pitch;
+	 unsigned long speed;
 	 const char udp_remote_ip[4] = { 255, 255, 255, 255}; 
 	 os_memcpy(user_udp_espconn.proto.udp->remote_ip, udp_remote_ip, 4); // ESP8266 udp remote IP need to be set everytime we call espconn_sent
 	 user_udp_espconn.proto.udp->remote_port = 5556;  // ESP8266 udp remote port need to be set everytime we call espconn_sent
@@ -79,9 +86,13 @@ uint8_t forward, left, right, needsCalibration;
 		os_sprintf(DeviceBuffer, "AT*CONFIG=\"general:navdata_demo\",\"TRUE\"\\r");
 		//os_sprintf(DeviceBuffer, "AT*CONFIG=%d%s%s\r", "\"general:navdata_demo\"","\"TRUE\"");
 		flystate++;
+
+	//acknowledge something
 	}else if(flystate == FLYSTATE_ACK1){
 		os_sprintf(DeviceBuffer, "AT*CTRL=0\r");
 		flystate++;
+
+	// tell drone its flying with outdoor shell
 	}else if(flystate == FLYSTATE_OUTDOOR){
 		os_sprintf(DeviceBuffer, "AT*CONFIG=%d,%s,%s\r", sequence++, "\"control:flight_without_shell\"","\"TRUE\"");
 		flystate++;
@@ -91,6 +102,7 @@ uint8_t forward, left, right, needsCalibration;
 		os_sprintf(DeviceBuffer, "AT*CONFIG=%d,%s,%s\r", sequence++, "\"control:outdoor\"","\"TRUE\"");
 		flystate++;
 		
+	// takeoff!
 	}else if(flystate == FLYSTATE_TAKEOFF){
 		os_sprintf(DeviceBuffer, "%s%d%s\r", ATREF, sequence++, TAKEOFF);
 		needsCalibration = 1;
@@ -105,28 +117,34 @@ uint8_t forward, left, right, needsCalibration;
 			os_sprintf(DeviceBuffer, "AT*CALIB=%d,%d\r", sequence++, 0);
 			needsCalibration = 0;
 		}else{
+			speed = forward*neg50asSingle;
+			//determine values frim input
+			if(left & !right)
+				pitch = neg50asSingle;	
+			else if(right & !left)
+				pitch = d50asSingle;
+			else
+				pitch = 0;
 			os_sprintf(DeviceBuffer, "%s%d,%d,%d,%d,%d,%d\r", ATPCMD, sequence++, (left || right || forward), 
-				0, -forward * 1090519040,0, -left * 1090519040 + right * 1090519040);
+				0, speed,0, pitch);
 		//os_sprintf(DeviceBuffer, "%s" MACSTR "!" , ESP8266_MSG, MAC2STR(hwaddr));
 		}
-	//send ftrim if grounded
-	}else if(flystate == FLYSTATE_GROUNDED_START){
-		os_sprintf(DeviceBuffer, "AT*FTRIM=%d\r", sequence++);
-
-	//send ftrim if grounded
-	}else if(flystate == FLYSTATE_GROUNDED_END){
-		os_sprintf(DeviceBuffer, "%s%d%s\r", ATREF, sequence++, LAND);
 
 	//otherwse perform pathing with reference to GPS data
-	}else if(flystate == FLYSTATE_AUTOMATIC){
+	}else if(flystate == FLYSTATE_AUTOMATIC)
 		os_sprintf(DeviceBuffer, "AT*COMWDG=%d\r", sequence++);
-	}
 
+	//send ftrim if grounded
+	else if(flystate == FLYSTATE_GROUNDED_START)
+		os_sprintf(DeviceBuffer, "AT*FTRIM=%d\r", sequence++);
+
+	//send land command
+	else if(flystate == FLYSTATE_GROUNDED_END)
+		os_sprintf(DeviceBuffer, "%s%d%s\r", ATREF, sequence++, LAND);
 	
-	os_printf("LAT: %f\n", getGPS(0, RMC_LAT));
-	os_printf("LONG: %f\n", getGPS(0, RMC_LONG));
-	os_printf("TIME: %f\n", getGPS(0, RMC_TIME));
-	os_printf("TEST: %d\n", 100);
+	
+	os_printf("LAT0: %d LONG0: %d, TIME0: %d LAT1: %d LONG1: %d TIME1: %d\n", (int)(getGPS(0, RMC_LAT)*1000), (int)(getGPS(0, RMC_LONG)*1000), (int)getGPS(0, RMC_TIME), (int)(getGPS(1, RMC_LAT)*1000), (int)(getGPS(1, RMC_LONG)*1000), (int)getGPS(1, RMC_TIME));
+	//os_printf("TEST: %d\n", (int)10.0);
 
 	//update adc_read_last
  	adc_read_last = system_adc_read();	

@@ -19,4 +19,5 @@
  ../include/user_config.h ../../include/gpio.h ../../include/os_type.h \
  ../../include/ets_sys.h ../../include/user_interface.h \
  ../../include/os_type.h ../../include/ip_addr.h ../../include/queue.h \
- ../../include/spi_flash.h ../include/driver/softuart.h
+ ../../include/spi_flash.h ../include/driver/softuart.h \
+ ../include/driver/parse.h ../../include/mem.h

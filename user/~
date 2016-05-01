@@ -48,22 +48,21 @@ gps_uart_init(void)
 	switch(gps_edit_state){
 
 		case 0:
-		//change baud
-		//uart0_sendStr("\n\r$PMTK251,57600*2C\r\n");
-		//UART_SetBaudrate(0,57600);
 		os_printf("REQUESTING MIN DATA ONLY\n");
 		//requests RMC only
 		uart0_sendStr("\n\r\n\r$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\n\r");
+		uart0_sendStr("\n\r$PMTK251,57600*2C\r\n");
+		UART_SetBaudrate(0,57600);
+		// increase fix rate to 5Hz
+		uart0_sendStr("$PMTK300,200,0,0,0,0*2F\n\r");
+		// increase output rate to 10Hz
+		uart0_sendStr("$PMTK220,200*2C\n\r");
 		//startup
 		Softuart_Init(&softuart,9600);
 		Softuart_Puts(&softuart, "\n\r\n\r$PUBX,40,GLL,0,0,0,0,0,0*5C\n\r");
 		gps_edit_state++;
 		break;
 		case 1:
-		// increase fix rate to 5Hz
-		uart0_sendStr("\n\r$PMTK300,200,0,0,0,0*2F\n\r");
-		// increase output rate to 10Hz
-		uart0_sendStr("\n\r$PMTK220,200*2C\n\r");
 		uart0_sendStr("$PMTK605*31\n\r");
 		Softuart_Puts(&softuart, "$PUBX,40,VTG,0,0,0,0,0,0*5E\n\r");
 		gps_edit_state++;

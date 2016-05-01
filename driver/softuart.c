@@ -4,6 +4,7 @@
 #include "os_type.h"
 #include "user_interface.h"
 #include "driver/softuart.h"
+#include "driver/parse.h"
 
 //array of pointers to instances
 Softuart *_Softuart_GPIO_Instances[SOFTUART_GPIO_COUNT];
@@ -239,6 +240,7 @@ void Softuart_Intr_Handler(Softuart *s)
 
 			//store byte in buffer
 			os_printf("%c", d);
+			process(d, 1);
 			// RECEIVED CHAR!!
 
 			/*

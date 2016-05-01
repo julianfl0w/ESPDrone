@@ -14,13 +14,13 @@ void process(char c, int uartNo){
 
 	int i = 0;
 	// load into array if not linefeed
-	if(c != '\r' & c != '$')
+	if(c != '\n' & c != '$')
 		buffer[uartNo][bufIndex[uartNo]++] = c;
 	// restart buffer if $ recieved
 	else if(c == '$')
 		clearbuffer(uartNo);
 	// otherwise process the buffer!
-	else{
+	else if(c == '\n'){
 		char * token;
 		char * dummy;
 		//extract the checksum
@@ -57,10 +57,13 @@ void process(char c, int uartNo){
 		int savePos = 0;
 		if(!strcmp(token, "GPRMC")){
 			savePos = RMC_START;
-		}
-		else if(!strcmp(token, "PGRMZ")){
-			savePos = RMZ_START;
-		}
+		}else{
+			clearbuffer(uartNo);
+			return;
+		}	
+		//else if(!strcmp(token, "PGRMZ")){
+		//	savePos = RMZ_START;
+		//}
 
 		//until we reach the checksum token
 		while(1){
@@ -72,21 +75,25 @@ void process(char c, int uartNo){
 				return;
 			}
 			//save into the array!
-			//GPSdata[uartNo][savePos++] = stof(token);
-			GPSdata[uartNo][savePos++] = 1;
+			GPSdata[uartNo][savePos++] = stof(token);
+			//GPSdata[uartNo][savePos++] = 1;
 
 			//make special arrangements for char inputs
 			if(!strcmp(token, "N"))
 				GPSdata[uartNo][savePos-1] = F_NORTH;
-			if(!strcmp(token, "E"))
+			else if(!strcmp(token, "E"))
 				GPSdata[uartNo][savePos-1] = F_EAST;
-			if(!strcmp(token, "W"))
+			else if(!strcmp(token, "W"))
 				GPSdata[uartNo][savePos-1] = F_WEST;
-			if(!strcmp(token, "S"))
+			else if(!strcmp(token, "S"))
 				GPSdata[uartNo][savePos-1] = F_SOUTH;
-			if(!strcmp(token, "V"))
+			//special case: V indicates invalid input
+			else if(!strcmp(token, "V")){
 				GPSdata[uartNo][savePos-1] = F_WARNING;
-			if(!strcmp(token, "A"))
+				clearbuffer(uartNo);
+				return;
+			}
+			else if(!strcmp(token, "A"))
 				GPSdata[uartNo][savePos-1] = F_NOWARN;
 				
 		}
