@@ -73,13 +73,25 @@ uint8_t forward, left, right, needsCalibration;
 	os_memcpy(user_udp_espconn.proto.udp->remote_ip, udp_remote_ip, 4); // ESP8266 udp remote IP need to be set everytime we call espconn_sent
 	user_udp_espconn.proto.udp->remote_port = 5556;  // ESP8266 udp remote port need to be set everytime we call espconn_sent
 
+	/*
+	os_printf("LAT0: %d LONG0: %d, TIME0: %d LAT1: %d LONG1: %d TIME1: %d\n", 
+		(int)(getGPS(0, RMC_LAT)*100000), (int)(getGPS(0, RMC_LONG)*100000), 
+		(int)getGPS(0, RMC_TIME), (int)(getGPS(1, RMC_LAT)*100000), 
+		(int)(getGPS(1, RMC_LONG)*100000), (int)getGPS(1, RMC_TIME));
+	//os_printf("TEST: %d\n", (int)10.0);
 
+	os_printf("decQClat: %d, decGVlat: %d, decQClong: %d, decGVlong: %d\n", 
+		(int)(NMEAtoDecimalDegrees(getGPS(1, RMC_LAT))*100000),
+		(int)(NMEAtoDecimalDegrees(getGPS(0, RMC_LAT))*100000),
+		(int)(NMEAtoDecimalDegrees(getGPS(1, RMC_LONG))*100000),
+		(int)(NMEAtoDecimalDegrees(getGPS(0, RMC_LONG))*100000));
+	*/
 	// calculate x distance
 	double xdist = calculate_xdistance(NMEAtoDecimalDegrees(getGPS(1, RMC_LAT)), NMEAtoDecimalDegrees(getGPS(0, RMC_LAT)));
 	// calculate y distance
 	double ydist = calculate_ydistance(NMEAtoDecimalDegrees(getGPS(1, RMC_LONG)), NMEAtoDecimalDegrees(getGPS(0, RMC_LONG)));
 
-	os_printf("xdist: %d, ydist: %d\n", xdist, ydist);
+	os_printf("xdist: %d, ydist: %d\n", (int)(xdist*1000), (int)(ydist*1000));
 
 	wifi_get_macaddr(STATION_IF, hwaddr);
  	
@@ -150,8 +162,6 @@ uint8_t forward, left, right, needsCalibration;
 		os_sprintf(DeviceBuffer, "%s%d%s\r", ATREF, sequence++, LAND);
 	
 	
-	os_printf("LAT0: %d LONG0: %d, TIME0: %d LAT1: %d LONG1: %d TIME1: %d\n", (int)(getGPS(0, RMC_LAT)*1000), (int)(getGPS(0, RMC_LONG)*1000), (int)getGPS(0, RMC_TIME), (int)(getGPS(1, RMC_LAT)*1000), (int)(getGPS(1, RMC_LONG)*1000), (int)getGPS(1, RMC_TIME));
-	//os_printf("TEST: %d\n", (int)10.0);
 
 	//update adc_read_last
  	adc_read_last = system_adc_read();	
