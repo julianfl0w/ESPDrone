@@ -44,7 +44,7 @@ Softuart softuart;
 
 // change speed to 200ms, see https://github.com/sarthakkaingade/gps_config/blob/master/gps_config.c
 char DeviceBuffer[16] = {0};
-char ms200string[14] = {0xB5, 0x62, 0x06, 0x08, 0x06, 0x00, 0xC8, 0x00, 0x01, 0x00, 0x01, 0x00, 0xDE, 0x6A};
+//char ms200string[14] = {0xB5, 0x62, 0x06, 0x08, 0x06, 0x00, 0xC8, 0x00, 0x01, 0x00, 0x01, 0x00, 0xDE, 0x6A};
 void ICACHE_FLASH_ATTR
 gps_uart_init(void)
 {
@@ -60,7 +60,6 @@ gps_uart_init(void)
 		//startup
 		Softuart_Init(&softuart,9600);
 		Softuart_Puts(&softuart, "\n\r\n\r$PUBX,40,GLL,0,0,0,0,0,0*5C\n\r");
-		gps_edit_state++;
 		break;
 		case 1:
 		// increase fix rate to 5Hz
@@ -70,33 +69,44 @@ gps_uart_init(void)
 		uart0_sendStr("$PMTK605*31\n\r");
 		//turn off VTG
 		Softuart_Puts(&softuart, "$PUBX,40,VTG,0,0,0,0,0,0*5E\n\r");
-		gps_edit_state++;
 		break;
 		case 2:
 		//turn off GGA
 		Softuart_Puts(&softuart, "$PUBX,40,GGA,0,0,0,0,0,0*5A\n\r");
-		gps_edit_state++;
 		break;
 		case 3:
 		//turn off GSA
 		Softuart_Puts(&softuart, "$PUBX,40,GSA,0,0,0,0,0,0*4E\n\r");
-		gps_edit_state++;
 		break;
 		case 4:
 		// turn off GSV
 		Softuart_Puts(&softuart, "$PUBX,40,GSV,0,0,0,0,0,0*59\n\r");
-		gps_edit_state++;
 		break;
 		case 5:
 		// change speed to 200ms
-		// [0x06,0x08, 0x06,0x00, 0x00,0xC8, 0x00,0x01, 0x00,0x00]
-		os_sprintf(DeviceBuffer, "%s\n\r", ms200string);
-		Softuart_Puts(&softuart, DeviceBuffer);
-		gps_edit_state++;
+		//,0xB5, 0x62, 0x06, 0x08, 0x06, 0x00, 0xC8, 0x00, 0x01, 0x00, 0x01, 0x00, 0xDE, 0x6A);
+		Softuart_Putchar(&softuart, 0xB5);
+		Softuart_Putchar(&softuart, 0x62);
+		Softuart_Putchar(&softuart, 0x06);
+		Softuart_Putchar(&softuart, 0x08);
+		Softuart_Putchar(&softuart, 0x06);
+		Softuart_Putchar(&softuart, 0x00);
+		Softuart_Putchar(&softuart, 0xC8);
+		Softuart_Putchar(&softuart, 0x00);
+		Softuart_Putchar(&softuart, 0x01);
+		Softuart_Putchar(&softuart, 0x00);
+		Softuart_Putchar(&softuart, 0x01);
+		Softuart_Putchar(&softuart, 0x00);
+		Softuart_Putchar(&softuart, 0xDE);
+		Softuart_Putchar(&softuart, 0x6A);
+		Softuart_Putchar(&softuart, '\n');
+		Softuart_Putchar(&softuart, '\r');
 		break;
 	}
-
-	os_timer_arm(&init_timer, 59, 0); 
+	if(gps_edit_state < 10){
+		os_timer_arm(&init_timer, 1519, 0); 
+		gps_edit_state++;
+	}
 }
 
 void ICACHE_FLASH_ATTR
@@ -122,7 +132,7 @@ user_init(void)
 	//clear noise
 	uart0_sendStr("\r\n\r\n\r\n");
 
-	wifi_set_phy_mode(3);
+	//wifi_set_phy_mode(3);
 	system_phy_set_powerup_option(3);
 	wifi_set_opmode(STATION_MODE); //Set station mode
 	system_phy_set_max_tpw(82); //MAX POWERR!

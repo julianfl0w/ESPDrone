@@ -2,101 +2,137 @@
 #include <string.h>   
 #include <stdlib.h>
 #include "driver/parse.h"
+#include "ets_sys.h"
+#include "osapi.h"
+#include "gpio.h"
+#include "os_type.h"
+#include "driver/uart.h"
+#include "c_types.h"
+#include "espconn.h"
+#include "mem.h"
+#include "user_interface.h"
 
 #define PI 3.14159265
 
 char buffer[GPS_COUNT][BUFFLENGTH]; 
+char intbuffer[GPS_COUNT][BUFFLENGTH]; 
+char thisbuffer[GPS_COUNT][BUFFLENGTH]; 
 int bufIndex[] = {0, 0};
 
 double GPSdata[GPS_COUNT][GPS_NUMVARS];
 
+void aveStrCpy(char * dest, char * src){
+	int i;
+	for(i = 0; i<BUFFLENGTH; i++)
+		if(i == 0)
+			dest[i] = 'G';
+		else if(i == 1)
+			dest[i] = 'P';
+		else
+			dest[i] = src[i];
+}
+
 void process(char c, int uartNo){
 
-	int i = 0;
-	// load into array if not linefeed
-	if(c != '\n' & c != '$')
-		buffer[uartNo][bufIndex[uartNo]++] = c;
 	// restart buffer if $ recieved
-	else if(c == '$')
+	if(c == '$'){
+		//strcpy(buffer[uartNo], intbuffer[uartNo]);
+		//memcpy(buffer[uartNo], intbuffer[uartNo], 85);
+		//os_printf("int: %s\n", intbuffer[uartNo]);
+		aveStrCpy(buffer[uartNo], intbuffer[uartNo]);
+		//os_printf("buf: %s\n", buffer[uartNo]);
 		clearbuffer(uartNo);
-	// otherwise process the buffer!
-	else if(c == '\n'){
-		char * token;
-		char * dummy;
-		//extract the checksum
-		token = strtok(buffer[uartNo], "*");
-		token = strtok(NULL, "\n");
+	}
 
-		//if there is no checksum, abort!
-		if(token == NULL){
-			clearbuffer(uartNo);
-			return;
-		}
-	
-		//convert checksum to int
-		int checksum = strtol(token, &dummy, 16);
+	//ignore '\r', '\n'
+	else if(c == '\r' || c == '\n')
+		c = '\0';
 
-		//check the checksum
-		unsigned char runningCS = 0;
-		for(i = 0; i < strlen(buffer[uartNo]); i++)
-			runningCS = runningCS^buffer[uartNo][i];
+	// load into array if not dolla
+	else{
+		intbuffer[uartNo][bufIndex[uartNo]++] = c;
+	}
+}
 
-		//if wrong checksum, abort!
-		if(runningCS != checksum){
-			clearbuffer(uartNo);
-			return;
-		}
+asyncProcess(uartNo){
+	int i = 0;
+	char * token;
+	char * dummy;
+	strcpy(thisbuffer[uartNo], buffer[uartNo]);
+	os_printf("%s\n", thisbuffer[uartNo]);
 
-		//extract the type
-		token = strtok(buffer[uartNo], ",");
-		if(token == NULL){
-			clearbuffer(uartNo);
-			return;
-		}
+	//extract the checksum
+	token = strtok(thisbuffer[uartNo], "*");
+	token = strtok(NULL, "\n");
 
-		int savePos = 0;
-		if(!strcmp(token, "GPRMC")){
+	//if there is no checksum, abort!
+	if(token == NULL){
+		clearbuffer(uartNo);
+		return;
+	}
+
+	//convert checksum to int
+	int checksum = strtol(token, &dummy, 16);
+
+	//check the checksum
+	unsigned char runningCS = 0;
+	for(i = 0; i < strlen(thisbuffer[uartNo]); i++)
+		runningCS = runningCS^thisbuffer[uartNo][i];
+
+	//if wrong checksum, abort!
+	if(runningCS != checksum){
+		clearbuffer(uartNo);
+		return;
+	}
+
+	//extract the type
+	token = strtok(buffer[uartNo], ",");
+	if(token == NULL){
+		clearbuffer(uartNo);
+		return;
+	}
+
+	int savePos = 0;
+	if(!strcmp(token, "GPRMC")){
 			savePos = RMC_START;
-		}else{
+	}else{
+		clearbuffer(uartNo);
+		return;
+	}	
+	//else if(!strcmp(token, "PGRMZ")){
+	//	savePos = RMZ_START;
+	//}
+
+	//until we reach the checksum token
+	while(1){
+		token = strtok( NULL, ",");	
+	
+		//token == null marks completion
+		if(token == NULL){
+			clearbuffer(uartNo);
+				return;
+		}
+		//save into the array!
+		GPSdata[uartNo][savePos++] = stof(token);
+		//GPSdata[uartNo][savePos++] = 1;
+
+		//make special arrangements for char inputs
+		if(!strcmp(token, "N"))
+			GPSdata[uartNo][savePos-1] = F_NORTH;
+		else if(!strcmp(token, "E"))
+			GPSdata[uartNo][savePos-1] = F_EAST;
+		else if(!strcmp(token, "W"))
+			GPSdata[uartNo][savePos-1] = F_WEST;
+		else if(!strcmp(token, "S"))
+			GPSdata[uartNo][savePos-1] = F_SOUTH;
+		//special case: V indicates invalid input
+		else if(!strcmp(token, "V")){
+			GPSdata[uartNo][savePos-1] = F_WARNING;
 			clearbuffer(uartNo);
 			return;
-		}	
-		//else if(!strcmp(token, "PGRMZ")){
-		//	savePos = RMZ_START;
-		//}
-
-		//until we reach the checksum token
-		while(1){
-			token = strtok( NULL, ",");	
-		
-			//token == null marks completion
-			if(token == NULL){
-				clearbuffer(uartNo);
-				return;
-			}
-			//save into the array!
-			GPSdata[uartNo][savePos++] = stof(token);
-			//GPSdata[uartNo][savePos++] = 1;
-
-			//make special arrangements for char inputs
-			if(!strcmp(token, "N"))
-				GPSdata[uartNo][savePos-1] = F_NORTH;
-			else if(!strcmp(token, "E"))
-				GPSdata[uartNo][savePos-1] = F_EAST;
-			else if(!strcmp(token, "W"))
-				GPSdata[uartNo][savePos-1] = F_WEST;
-			else if(!strcmp(token, "S"))
-				GPSdata[uartNo][savePos-1] = F_SOUTH;
-			//special case: V indicates invalid input
-			else if(!strcmp(token, "V")){
-				GPSdata[uartNo][savePos-1] = F_WARNING;
-				clearbuffer(uartNo);
-				return;
-			}
-			else if(!strcmp(token, "A"))
-				GPSdata[uartNo][savePos-1] = F_NOWARN;
-				
 		}
+		else if(!strcmp(token, "A"))
+			GPSdata[uartNo][savePos-1] = F_NOWARN;
 	}
 }
 
@@ -104,7 +140,7 @@ void clearbuffer(int uartNo){
 	int i;
 	bufIndex[uartNo] = 0;
 	for(i = 0; i < BUFFLENGTH; i++)
-		buffer[uartNo][i] = '0';
+		intbuffer[uartNo][i] = '\0';
 }
 
 double getGPS(int uartNo, int value){
@@ -131,3 +167,6 @@ double stof(const char* s){
   };
   return rez * fact;
 };
+
+
+

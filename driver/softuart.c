@@ -239,9 +239,9 @@ void Softuart_Intr_Handler(Softuart *s)
 			}
 
 			//store byte in buffer
-			os_printf("%c", d);
+			//os_printf("%c", d);
 			process(d, 1);
-			// RECEIVED CHAR!!
+			//RECEIVED CHAR!!
 
 			/*
 			// if buffer full, set the overflow flag and return

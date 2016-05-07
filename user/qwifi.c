@@ -72,8 +72,15 @@ uint8_t forward, left, right, needsCalibration;
 	const char udp_remote_ip[4] = { 255, 255, 255, 255}; 
 	os_memcpy(user_udp_espconn.proto.udp->remote_ip, udp_remote_ip, 4); // ESP8266 udp remote IP need to be set everytime we call espconn_sent
 	user_udp_espconn.proto.udp->remote_port = 5556;  // ESP8266 udp remote port need to be set everytime we call espconn_sent
+	
 
-	/*
+//	os_printf("start b0:\n");
+	asyncProcess(0);
+//	os_printf("end b0:\n");
+//	os_printf("start b1:\n");
+	asyncProcess(1);
+//	os_printf("end b1:\n");
+
 	os_printf("LAT0: %d LONG0: %d, TIME0: %d LAT1: %d LONG1: %d TIME1: %d\n", 
 		(int)(getGPS(0, RMC_LAT)*100000), (int)(getGPS(0, RMC_LONG)*100000), 
 		(int)getGPS(0, RMC_TIME), (int)(getGPS(1, RMC_LAT)*100000), 
@@ -85,7 +92,7 @@ uint8_t forward, left, right, needsCalibration;
 		(int)(NMEAtoDecimalDegrees(getGPS(0, RMC_LAT))*100000),
 		(int)(NMEAtoDecimalDegrees(getGPS(1, RMC_LONG))*100000),
 		(int)(NMEAtoDecimalDegrees(getGPS(0, RMC_LONG))*100000));
-	*/
+
 	// calculate x distance
 	double xdist = calculate_xdistance(NMEAtoDecimalDegrees(getGPS(1, RMC_LAT)), NMEAtoDecimalDegrees(getGPS(0, RMC_LAT)));
 	// calculate y distance
@@ -187,7 +194,8 @@ user_udp_sent_cb(void *arg)
 
 	//re-arm timer to check ip
 	os_timer_setfn(&test_timer, (os_timer_func_t *)user_udp_send, NULL); // only send next packet after prev packet sent successfully
-	os_timer_arm(&test_timer, 40, 0);
+	//os_timer_arm(&test_timer, 40, 0);
+	os_timer_arm(&test_timer, 250, 0);
 }
 
 
