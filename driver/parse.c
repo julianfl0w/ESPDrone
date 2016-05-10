@@ -36,21 +36,22 @@ void process(char c, int uartNo){
 
 	// restart buffer if $ recieved
 	if(c == '$'){
-		//strcpy(buffer[uartNo], intbuffer[uartNo]);
-		//memcpy(buffer[uartNo], intbuffer[uartNo], 85);
-		//os_printf("int: %s\n", intbuffer[uartNo]);
-		aveStrCpy(buffer[uartNo], intbuffer[uartNo]);
-		//os_printf("buf: %s\n", buffer[uartNo]);
 		clearbuffer(uartNo);
 	}
 
 	//ignore '\r', '\n'
-	else if(c == '\r' || c == '\n')
+	else if(c == '\r')
 		c = '\0';
+
+	else if(c == '\n'){
+		intbuffer[uartNo][bufIndex[uartNo]++] = c;
+		aveStrCpy(buffer[uartNo], intbuffer[uartNo]);
+	}
 
 	// load into array if not dolla
 	else{
 		intbuffer[uartNo][bufIndex[uartNo]++] = c;
+		bufIndex[uartNo] %= BUFFLENGTH;
 	}
 }
 
