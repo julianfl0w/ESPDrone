@@ -195,7 +195,7 @@ user_udp_sent_cb(void *arg)
 	//re-arm timer to check ip
 	os_timer_setfn(&test_timer, (os_timer_func_t *)user_udp_send, NULL); // only send next packet after prev packet sent successfully
 	//os_timer_arm(&test_timer, 40, 0);
-	os_timer_arm(&test_timer, 250, 0);
+	os_timer_arm(&test_timer, 50, 0);
 }
 
 
